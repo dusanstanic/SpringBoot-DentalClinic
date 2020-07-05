@@ -1,0 +1,10 @@
+package com.example.demo.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.example.demo.model.Appointment;
+
+public interface AppointmentRepository extends JpaRepository<Appointment, Integer> {
+	@Query("from Appointment a where a.appointmentTime.appointmentDate = ?1")
+	List<Appointment> findAllWithAppointmentDate(Date appointmentDate);
+}

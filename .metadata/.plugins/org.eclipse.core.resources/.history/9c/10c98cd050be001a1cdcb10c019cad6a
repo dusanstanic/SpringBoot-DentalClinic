@@ -1,0 +1,13 @@
+package com.example.demo.service;
+
+import java.util.Date;
+import java.util.List;
+
+import com.example.demo.model.Appointment;
+
+public interface AppointmentService {
+
+	void save(Appointment appointment);
+
+	List<Appointment> findAllWithAppointmentDate(Date appointmentDate);
+}

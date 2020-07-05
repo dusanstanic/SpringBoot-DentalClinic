@@ -1,0 +1,80 @@
+package com.example.demo.controller;
+
+import java.net.URI;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import com.example.demo.model.Drivingsession;
+import com.example.demo.model.Student;
+import com.example.demo.repository.DrivingSessionJpaRepository;
+import com.example.demo.repository.StudentJpaRepository;
+import com.example.demo.repository.StudentRepository;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+
+@RestController
+@CrossOrigin
+@RequestMapping(value="/students")
+public class StudentController {
+	
+	@Autowired
+	StudentJpaRepository sr;
+	
+	@Autowired
+	DrivingSessionJpaRepository dr;
+
+	@GetMapping(path="/hello-world")
+	public String helloWorld() {
+		return "Hello World";
+	}
+	
+	@GetMapping(path="/hello-world-bean")
+	public HelloWorldBean helloWorldBean() {
+		return new HelloWorldBean("Hello World");
+	}
+	
+	@GetMapping(path="/hello-world/path-variable/{name}")
+	public HelloWorldBean helloWorldBeanPathVariable(@PathVariable String name) {
+		return new HelloWorldBean("Hello World " + name);
+	}
+	
+	@GetMapping(path="")
+	public List<Student> getAllStudents() {
+		return sr.findAll();
+	}
+	
+	@GetMapping(path="/{id}")
+	public Optional<Student> getAllStudents(@PathVariable int id) {
+		return sr.findById(id);
+	}
+	
+	@DeleteMapping(path="/{id}")
+	public ResponseEntity<Void> deleteStudent(@PathVariable int id) {
+		sr.deleteById(id);
+		return ResponseEntity.noContent().build();
+	}
+	
+	@PutMapping(path="/{id}")
+	public ResponseEntity<Void> saveStudent(@PathVariable int id, @RequestBody Student student) {
+		System.out.println(student);
+		Student s = sr.save(student);
+		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(s.getStudentId());
+		return ResponseEntity.noContent().build();
+	}
+	
+	
+}

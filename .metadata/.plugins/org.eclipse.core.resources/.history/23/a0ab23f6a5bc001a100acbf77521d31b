@@ -1,0 +1,104 @@
+package model;
+
+import java.io.Serializable;
+import javax.persistence.*;
+import java.util.Date;
+import java.util.List;
+
+
+/**
+ * The persistent class for the student database table.
+ * 
+ */
+@Entity
+@NamedQuery(name="Student.findAll", query="SELECT s FROM Student s")
+public class Student implements Serializable {
+	private static final long serialVersionUID = 1L;
+
+	@Id
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@Column(name="student_id")
+	private int studentId;
+
+	@Temporal(TemporalType.DATE)
+	@Column(name="birth_date")
+	private Date birthDate;
+
+	private String email;
+
+	@Column(name="first_name")
+	private String firstName;
+
+	@Column(name="last_name")
+	private String lastName;
+
+	//bi-directional many-to-one association to Drivingsession
+	@OneToMany(mappedBy="student")
+	private List<Drivingsession> drivingsessions;
+
+	public Student() {
+	}
+
+	public int getStudentId() {
+		return this.studentId;
+	}
+
+	public void setStudentId(int studentId) {
+		this.studentId = studentId;
+	}
+
+	public Date getBirthDate() {
+		return this.birthDate;
+	}
+
+	public void setBirthDate(Date birthDate) {
+		this.birthDate = birthDate;
+	}
+
+	public String getEmail() {
+		return this.email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public String getFirstName() {
+		return this.firstName;
+	}
+
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+
+	public String getLastName() {
+		return this.lastName;
+	}
+
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+
+	public List<Drivingsession> getDrivingsessions() {
+		return this.drivingsessions;
+	}
+
+	public void setDrivingsessions(List<Drivingsession> drivingsessions) {
+		this.drivingsessions = drivingsessions;
+	}
+
+	public Drivingsession addDrivingsession(Drivingsession drivingsession) {
+		getDrivingsessions().add(drivingsession);
+		drivingsession.setStudent(this);
+
+		return drivingsession;
+	}
+
+	public Drivingsession removeDrivingsession(Drivingsession drivingsession) {
+		getDrivingsessions().remove(drivingsession);
+		drivingsession.setStudent(null);
+
+		return drivingsession;
+	}
+
+}

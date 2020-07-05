@@ -1,0 +1,30 @@
+package com.example.demo.repository;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+
+import com.example.demo.model.Student;
+
+public class StudentRepository {
+
+	@PersistenceContext
+	EntityManager em;
+	
+	public List<Student> getAllSongs(){
+		List<Student> students = new ArrayList<>();
+		try{
+			Query q = em.createQuery("select s from Student s");
+			students = q.getResultList();
+			return students;
+		}catch(Exception e){
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+}
+

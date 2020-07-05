@@ -1,0 +1,66 @@
+package com.example.demo.model;
+import java.io.Serializable;
+import javax.persistence.*;
+import java.sql.Time;
+
+
+/**
+ * The persistent class for the fullhour database table.
+ * 
+ */
+@Entity
+@NamedQuery(name="Fullhour.findAll", query="SELECT f FROM Fullhour f")
+public class Fullhour implements Serializable {
+	private static final long serialVersionUID = 1L;
+
+	@Id
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	private int id;
+
+	@Column(name="time_from")
+	private Time timeFrom;
+
+	@Column(name="time_to")
+	private Time timeTo;
+
+	//bi-directional many-to-one association to AppointmentTime
+	@ManyToOne
+	@JoinColumn(name="appointment_time_id")
+	private AppointmentTime appointmentTime;
+
+	public Fullhour() {
+	}
+
+	public int getId() {
+		return this.id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public Time getTimeFrom() {
+		return this.timeFrom;
+	}
+
+	public void setTimeFrom(Time timeFrom) {
+		this.timeFrom = timeFrom;
+	}
+
+	public Time getTimeTo() {
+		return this.timeTo;
+	}
+
+	public void setTimeTo(Time timeTo) {
+		this.timeTo = timeTo;
+	}
+
+	public AppointmentTime getAppointmentTime() {
+		return this.appointmentTime;
+	}
+
+	public void setAppointmentTime(AppointmentTime appointmentTime) {
+		this.appointmentTime = appointmentTime;
+	}
+
+}

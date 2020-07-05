@@ -1,0 +1,53 @@
+package com.example.demo.repository;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.example.demo.model.Drivingsession;
+import com.example.demo.model.Student;
+
+@Repository
+@Transactional
+public class StudentRepository {
+
+	@PersistenceContext
+	EntityManager em;
+	
+	@Autowired
+	StudentJpaRepository studentRepo;
+
+	public List<Student> getAllStudents() {
+		List<Student> students = new ArrayList<>();
+		try {
+			Query q = em.createQuery("SELECT s FROM Student s");
+			students = q.getResultList();
+			System.out.println("Students: " + studentRepo.findAll());
+			return students;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	public List<Drivingsession> getAllDrivingSessions() {
+		List<Drivingsession> students = new ArrayList<>();
+		try {
+			Query q = em.createQuery("SELECT d FROM Drivingsession d");
+			students = q.getResultList();
+			System.out.println("Students: " + studentRepo.findAll());
+			return students;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+}

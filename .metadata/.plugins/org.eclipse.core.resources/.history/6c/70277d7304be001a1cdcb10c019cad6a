@@ -1,0 +1,28 @@
+package com.example.demo.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.example.demo.model.Dentist;
+import com.example.demo.repository.DentistRepository;
+
+@RestController
+@RequestMapping("/dentists")
+public class DentistController {
+	
+	@Autowired
+	DentistRepository dentistRepository;
+	
+	@GetMapping("/{phoneNumber}")
+	public ResponseEntity<Dentist> getDentist(@PathVariable Integer phoneNumber) {
+		Dentist dentist = dentistRepository.findByPhoneNumber(phoneNumber);
+		if (dentist == null)
+			return ResponseEntity.notFound().build();
+		return ResponseEntity.ok(dentist);
+	}
+
+}

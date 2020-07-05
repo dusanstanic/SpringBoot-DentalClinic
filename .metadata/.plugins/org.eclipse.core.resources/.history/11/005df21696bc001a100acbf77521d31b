@@ -1,0 +1,4 @@
+spring.datasource.url = jdbc:mysql://localhost:3306/drivingAcademy
+spring.datasource.username = root
+sping.datasource.password = IS2 
+spring.datasource.driver-class-name=com.mysql.jdbc.Driver

@@ -1,0 +1,63 @@
+package com.example.demo.service;
+
+import java.sql.Time;
+import java.util.Date;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.example.demo.model.Appointment;
+import com.example.demo.model.AppointmentTime;
+import com.example.demo.repository.AppointmentRepository;
+import com.example.demo.repository.AppointmentTimeRepository;
+
+
+
+@Service
+public class AppointmentServiceImpl implements AppointmentService {
+
+	@Autowired
+	AppointmentRepository appointmentRepo;
+	@Autowired
+	AppointmentTimeRepository appointmentTimeRepo;
+
+	public void save(Appointment appointment) {
+		Date appointmentDate = appointment.getAppointmentTime().getAppointmentDate();
+		Time fromTime = appointment.getAppointmentTime().getFromTime();
+		List<AppointmentTime> appointmentTimesForDate = appointmentTimeRepo
+				.getAppointmentTimesForDateAndHour(appointmentDate, fromTime);
+
+		 appointmentTimesForDate.forEach(a -> System.out.println(" TIME -----------> " + a.getFromTime()));
+
+		if (isFullHour(fromTime, appointment.getAppointmentTime().getToTime())) {
+			System.out.println("FULLLL");
+			appointmentTimesForDate.forEach(a -> {
+				a.setAvailable((byte) 0);
+				appointmentTimeRepo.update(a);
+			});
+		} else {
+			appointmentTimesForDate.stream().filter(at -> {
+				System.out.println(at.getFromTime() == fromTime || isFullHour(fromTime, at.getToTime()));
+				return at.getFromTime() == fromTime || isFullHour(fromTime, at.getToTime());
+			}).forEach(at -> {
+				System.out.println("YOO " + at.getFromTime());
+				at.setAvailable((byte) 0);
+				appointmentTimeRepo.update(at);
+			});
+		}
+		appointmentRepo.save(appointment);
+	}
+
+	@Override
+	public List<Appointment> findAllWithAppointmentDate(Date appointmentDate) {
+		return appointmentRepo.findAllWithAppointmentDate(appointmentDate);
+	}
+
+	private boolean isFullHour(Time fromTime, Time toTime) {
+		int toTimeHour = toTime.getHours();
+		int fromTimeHour = fromTime.getHours();
+		return toTimeHour - fromTimeHour == 1;
+	}
+}
+

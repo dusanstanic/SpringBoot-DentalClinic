@@ -1,0 +1,47 @@
+package com.example.demo.repository;
+
+import java.util.Date;
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.example.demo.model.Appointment;
+
+@Transactional
+@Repository
+public class AppointmentRepository {
+
+	@PersistenceContext
+	EntityManager em;
+
+	public List<Appointment> findAllWithAppointmentDate(Date appointmentDate) {
+		Query query = em.createQuery("from Appointment a where a.appointmentTime.appointmentDate = :appointmentDate");
+		query.setParameter("appointmentDate", appointmentDate);
+		return query.getResultList();
+	}
+
+	public void save(Appointment appointment) {
+		em.persist(appointment);
+
+	}
+
+	public void delete(Appointment appointment) {
+		em.remove(appointment);
+	}
+
+	public Appointment getLatestAppointmentByPhoneNumber(int phoneNumber) {
+		Query query = em.createQuery("from Appointment a where a.phoneNumber = :phoneNumber order by a.id");
+		query.setParameter("phoneNumber", phoneNumber);
+		query.setMaxResults(1);
+
+		Appointment appointment = (Appointment) query.getSingleResult();
+
+		return appointment;
+	}
+
+}

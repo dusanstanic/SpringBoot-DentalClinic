@@ -1,0 +1,134 @@
+package com.example.demo.service;
+
+import java.sql.Time;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+import com.example.demo.model.Appointment;
+import com.example.demo.model.AppointmentTime;
+import com.example.demo.repository.AppointmentRepository;
+import com.example.demo.repository.AppointmentTimeRepository;
+
+@Service
+public class AppointmentServiceImpl implements AppointmentService {
+
+	@Value("${delete.deletion-time}")
+	private String deletionTime;
+
+	@Autowired
+	AppointmentRepository appointmentRepo;
+	@Autowired
+	AppointmentTimeRepository appointmentTimeRepo;
+
+	public Appointment save(Appointment appointment) {
+		Date appointmentDate = appointment.getAppointmentTime().getAppointmentDate();
+
+		List<AppointmentTime> appointmentTimesForDate = appointmentTimeRepo
+				.getAppointmentTimesForDateAndHour(appointmentDate, appointment.getAppointmentTime().getFromTime());
+
+		setAvailabiltyForAppointmentTimes(appointment, false);
+
+		return appointmentRepo.save(appointment);
+	}
+
+	@Override
+	public List<Appointment> findAllWithAppointmentDate(Date appointmentDate) {
+		return appointmentRepo.findByAppointmentTimeAppointmentDate(appointmentDate);
+	}
+
+	private boolean isFullHour(Time fromTime, Time toTime) {
+		int toTimeMinutes = toTime.getMinutes();
+		int fromTimeMinutes = fromTime.getMinutes();
+		return toTimeMinutes == 0 && fromTimeMinutes == 0;
+	}
+
+	@Override
+	public boolean deleteByPhoneNumber(int phoneNumber) {
+		List<Appointment> appointments = appointmentRepo.findAppointmentByPhoneNumberOrderByIdDesc(phoneNumber,
+				PageRequest.of(0, 1));
+
+		if (appointments.size() > 0) {
+			Appointment appointment = appointments.get(0);
+			Date appointmentDate = appointment.getAppointmentTime().getAppointmentDate();
+
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(appointmentDate);
+			cal.add(Calendar.HOUR_OF_DAY, appointment.getAppointmentTime().getFromTime().getHours());
+
+			Instant then = cal.toInstant();
+			System.out.println(then);
+			Instant now = Instant.now();
+			System.out.println(deletionTime);
+			Instant twentyFourHoursEarlier = now.minus(Integer.valueOf(deletionTime), ChronoUnit.HOURS);
+			boolean within24Hours = !then.isBefore(twentyFourHoursEarlier);
+
+			if (within24Hours) {
+				setAvailabiltyForAppointmentTimes(appointment, true);
+				appointmentRepo.delete(appointment);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private void setAvailabiltyForAppointmentTimes(Appointment appointment, boolean makeAvailable) {
+		byte available = (byte) (makeAvailable == true ? 1 : 0);
+		Date appointmentDate = appointment.getAppointmentTime().getAppointmentDate();
+		Time fromTime = appointment.getAppointmentTime().getFromTime();
+		Time toTime = appointment.getAppointmentTime().getToTime();
+
+		List<AppointmentTime> appointmentTimesForDate = appointmentTimeRepo
+				.getAppointmentTimesForDateAndHour(appointmentDate, fromTime);
+
+		appointment.getAppointmentTime().setAvailable((byte) 0);
+		if (isFullHour(fromTime, appointment.getAppointmentTime().getToTime())) {
+			appointmentTimesForDate.forEach(a -> {
+				a.setAvailable(available);
+				appointmentTimeRepo.update(a);
+			});
+		} else {
+			appointmentTimesForDate.stream().filter(at -> {
+				return (at.getFromTime().getMinutes() == fromTime.getMinutes()
+						&& at.getToTime().getMinutes() == toTime.getMinutes())
+						|| isFullHour(at.getFromTime(), at.getToTime());
+			}).forEach(at -> {
+				at.setAvailable(available);
+				appointmentTimeRepo.update(at);
+			});
+		}
+	}
+
+	@Override
+	public List<Appointment> findAllValid(Pageable pageable) {
+		return appointmentRepo.findAllValid(pageable);
+	}
+
+	/*
+	 * @Override public boolean deleteByPhoneNumber(int phoneNumber) { Appointment
+	 * appointment = appointmentRepo.getLatestAppointmentByPhoneNumber(phoneNumber);
+	 * 
+	 * Date appointmentDate = appointment.getAppointmentTime().getAppointmentDate();
+	 * 
+	 * Calendar cal = Calendar.getInstance(); cal.setTime(appointmentDate);
+	 * cal.add(Calendar.HOUR_OF_DAY,
+	 * appointment.getAppointmentTime().getFromTime().getHours());
+	 * 
+	 * Instant then = cal.toInstant(); System.out.println(then); Instant now =
+	 * Instant.now(); System.out.println(deletionTime); Instant
+	 * twentyFourHoursEarlier = now.minus(Integer.valueOf(deletionTime),
+	 * ChronoUnit.HOURS); boolean within24Hours =
+	 * !then.isBefore(twentyFourHoursEarlier);
+	 * 
+	 * if (within24Hours) { setAvailabiltyForAppointmentTimes(appointment, true);
+	 * appointmentRepo.delete(appointment); return true; } return false; }
+	 */
+}

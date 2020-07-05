@@ -1,0 +1,77 @@
+package model;
+
+import java.io.Serializable;
+import javax.persistence.*;
+import java.util.Date;
+
+
+/**
+ * The persistent class for the drivingsession database table.
+ * 
+ */
+@Entity
+@NamedQuery(name="Drivingsession.findAll", query="SELECT d FROM Drivingsession d")
+public class Drivingsession implements Serializable {
+	private static final long serialVersionUID = 1L;
+
+	@Id
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	private int drivingSession_id;
+
+	private int duration;
+
+	@Temporal(TemporalType.DATE)
+	@Column(name="session_date")
+	private Date sessionDate;
+
+	private String type;
+
+	//bi-directional many-to-one association to Student
+	@ManyToOne
+	@JoinColumn(name="student_id")
+	private Student student;
+
+	public Drivingsession() {
+	}
+
+	public int getDrivingSession_id() {
+		return this.drivingSession_id;
+	}
+
+	public void setDrivingSession_id(int drivingSession_id) {
+		this.drivingSession_id = drivingSession_id;
+	}
+
+	public int getDuration() {
+		return this.duration;
+	}
+
+	public void setDuration(int duration) {
+		this.duration = duration;
+	}
+
+	public Date getSessionDate() {
+		return this.sessionDate;
+	}
+
+	public void setSessionDate(Date sessionDate) {
+		this.sessionDate = sessionDate;
+	}
+
+	public String getType() {
+		return this.type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	public Student getStudent() {
+		return this.student;
+	}
+
+	public void setStudent(Student student) {
+		this.student = student;
+	}
+
+}
